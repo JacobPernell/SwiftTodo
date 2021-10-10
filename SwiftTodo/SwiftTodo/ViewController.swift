@@ -10,7 +10,7 @@ import UIKit
 class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSource {
     
     let tableView = UITableView()
-    var tableViewData = [String]()
+    var todoListData = [String]()
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -32,13 +32,13 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
     }
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return 10
+        return todoListData.count
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "cell", for: indexPath)
         
-        cell.textLabel?.text = "Cell \(indexPath.row + 1)"
+        cell.textLabel?.text = todoListData[indexPath.row]
         return cell
     }
     
@@ -48,7 +48,29 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
     }
     
     @objc func addTodoItem() {
-        print("meow")
+        let todoAlert = UIAlertController(title: "Add Todo", message: nil, preferredStyle: .alert)
+        
+        todoAlert.addTextField { textField in
+            textField.placeholder = "New todo item..."
+        }
+        
+        todoAlert.addAction(UIAlertAction(title: "Add", style: .default, handler: { _ in
+            
+            if let newTodo = todoAlert.textFields?.first?.text {
+                if newTodo != "" {
+                    self.todoListData.append(newTodo)
+                    self.tableView.reloadData()
+                } else {
+                    let todoIsBlankAlert = UIAlertController(title: "Cannot add blank todo", message: nil, preferredStyle: .alert)
+                    todoIsBlankAlert.addAction(UIAlertAction(title: "Ok", style: .default, handler: nil))
+                    self.present(todoIsBlankAlert, animated: true, completion: nil)
+                }
+            }
+        }))
+        
+        todoAlert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: nil))
+        
+        self.present(todoAlert, animated: true, completion: nil)
     }
 }
 
