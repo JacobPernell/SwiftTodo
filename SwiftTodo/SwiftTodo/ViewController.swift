@@ -24,8 +24,12 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
         
         let addButton = UIBarButtonItem(barButtonSystemItem: .add, target: self, action: #selector(addTodoItem))
         self.navigationItem.rightBarButtonItem = addButton
+        
+        let editButton = UIBarButtonItem(barButtonSystemItem: .edit, target: self, action: #selector(editMode))
+        self.navigationItem.leftBarButtonItem = editButton
     }
     
+    // MARK: - Tableview setup
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
         tableView.frame = view.bounds
@@ -47,6 +51,7 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
         print("cell \(indexPath.row + 1) tapped")
     }
     
+    // MARK: - Cell swipe actions
     func tableView(_ tableView: UITableView, editingStyleForRowAt indexPath: IndexPath) -> UITableViewCell.EditingStyle {
         return .delete
     }
@@ -60,6 +65,7 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
         }
     }
     
+    // MARK: - Add new todo
     @objc func addTodoItem() {
         let todoAlert = UIAlertController(title: "Add Todo", message: nil, preferredStyle: .alert)
         
@@ -84,6 +90,24 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
         todoAlert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: nil))
         
         self.present(todoAlert, animated: true, completion: nil)
+    }
+    
+    // MARK: - Edit mode
+    @objc func editMode() {
+        if tableView.isEditing {
+            tableView.isEditing = false
+        } else {
+            tableView.isEditing = true
+        }
+    }
+    
+    func tableView(_ tableView: UITableView, canMoveRowAt indexPath: IndexPath) -> Bool {
+        return true
+    }
+    
+    func tableView(_ tableView: UITableView, moveRowAt sourceIndexPath: IndexPath, to destinationIndexPath: IndexPath) {
+        todoListData.swapAt(sourceIndexPath.row, destinationIndexPath.row)
+        
     }
 }
 
