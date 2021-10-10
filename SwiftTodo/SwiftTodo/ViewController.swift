@@ -47,6 +47,19 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
         print("cell \(indexPath.row + 1) tapped")
     }
     
+    func tableView(_ tableView: UITableView, editingStyleForRowAt indexPath: IndexPath) -> UITableViewCell.EditingStyle {
+        return .delete
+    }
+    
+    func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
+        if editingStyle == .delete {
+            tableView.beginUpdates()
+            todoListData.remove(at: indexPath.row)
+            tableView.deleteRows(at: [indexPath], with: .fade)
+            tableView.endUpdates()
+        }
+    }
+    
     @objc func addTodoItem() {
         let todoAlert = UIAlertController(title: "Add Todo", message: nil, preferredStyle: .alert)
         
