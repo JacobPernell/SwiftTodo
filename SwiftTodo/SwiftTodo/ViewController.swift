@@ -19,6 +19,7 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
         tableView.register(UITableViewCell.self, forCellReuseIdentifier: "cell")
         tableView.delegate = self
         tableView.dataSource = self
+        tableView.allowsSelectionDuringEditing = true
         
         title = "Todo List"
         
@@ -28,7 +29,7 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
         let editButton = UIBarButtonItem(barButtonSystemItem: .edit, target: self, action: #selector(editMode))
         self.navigationItem.leftBarButtonItem = editButton
         
-//        setEditButtonEnabledStatus()
+        setEditButtonEnabledStatus()
     }
     
     // MARK: - Tableview setup
@@ -50,10 +51,36 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: true)
-        print("cell \(indexPath.row + 1) tapped")
+        if tableView.isEditing == true {
+            let todoEditAlert = UIAlertController(title: "Edit Todo", message: nil, preferredStyle: .alert)
+            
+            todoEditAlert.addTextField { textField in
+                textField.text = tableView.cellForRow(at: indexPath)?.textLabel?.text
+            }
+            
+            todoEditAlert.addAction(UIAlertAction(title: "Edit", style: .default, handler: { _ in
+                
+                if let newTodo = todoEditAlert.textFields?.first?.text {
+                    if newTodo != "" {
+                        self.todoListData[indexPath.row] = newTodo
+                        print(self.todoListData)
+                        self.tableView.reloadData()
+                        self.setEditButtonEnabledStatus()
+                    } else {
+                        let todoIsBlankAlert = UIAlertController(title: "Cannot add blank todo", message: nil, preferredStyle: .alert)
+                        todoIsBlankAlert.addAction(UIAlertAction(title: "Ok", style: .default, handler: nil))
+                        self.present(todoIsBlankAlert, animated: true, completion: nil)
+                    }
+                }
+            }))
+            
+            todoEditAlert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: nil))
+            
+            self.present(todoEditAlert, animated: true, completion: nil)
+        }
     }
     
-    // MARK: - Cell swipe actions
+    // MARK: - Cell swipe actions (delete / confirm)
     func tableView(_ tableView: UITableView, editingStyleForRowAt indexPath: IndexPath) -> UITableViewCell.EditingStyle {
         return .delete
     }
@@ -74,21 +101,12 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
         return UISwipeActionsConfiguration(actions: [swipeRight])
     }
     
-//    func tableView(_ tableView: UITableView, trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
-//        let swipeLeft = UIContextualAction(style: .normal,
-//                                        title: "Complete") { [weak self] (action, view, completionHandler) in
-//                                            self?.handleCompleteTodo(forRowAt: indexPath)
-//                                            completionHandler(true)
-//        }
-//        swipeLeft.backgroundColor = .systemGreen
-//        return UISwipeActionsConfiguration(actions: [swipeLeft])
-//    }
-    
     func handleCompleteTodo(forRowAt indexPath: IndexPath) {
         tableView.beginUpdates()
         todoListData.remove(at: indexPath.row)
         tableView.deleteRows(at: [indexPath], with: .fade)
         tableView.endUpdates()
+        setEditButtonEnabledStatus()
     }
     
     // MARK: - Add new todo
@@ -105,6 +123,7 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
                 if newTodo != "" {
                     self.todoListData.append(newTodo)
                     self.tableView.reloadData()
+                    self.setEditButtonEnabledStatus()
                 } else {
                     let todoIsBlankAlert = UIAlertController(title: "Cannot add blank todo", message: nil, preferredStyle: .alert)
                     todoIsBlankAlert.addAction(UIAlertAction(title: "Ok", style: .default, handler: nil))
