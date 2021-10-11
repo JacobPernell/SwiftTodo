@@ -11,6 +11,7 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
     
     let tableView = UITableView()
     var todoListData = [String]()
+    let userDefaults = UserDefaults.standard
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -22,6 +23,10 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
         tableView.allowsSelectionDuringEditing = true
         
         title = "Todo List"
+        
+        if let udTodoList = userDefaults.value(forKey: "todoList") as? [String] {
+            todoListData = udTodoList
+        }
         
         let addButton = UIBarButtonItem(barButtonSystemItem: .add, target: self, action: #selector(addTodoItem))
         self.navigationItem.rightBarButtonItem = addButton
@@ -63,9 +68,9 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
                 if let newTodo = todoEditAlert.textFields?.first?.text {
                     if newTodo != "" {
                         self.todoListData[indexPath.row] = newTodo
-                        print(self.todoListData)
                         self.tableView.reloadData()
                         self.setEditButtonEnabledStatus()
+                        self.userDefaults.set(self.todoListData, forKey: "todoList")
                     } else {
                         let todoIsBlankAlert = UIAlertController(title: "Cannot add blank todo", message: nil, preferredStyle: .alert)
                         todoIsBlankAlert.addAction(UIAlertAction(title: "Ok", style: .default, handler: nil))
@@ -73,10 +78,11 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
                     }
                 }
             }))
-            
+
             todoEditAlert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: nil))
             
             self.present(todoEditAlert, animated: true, completion: nil)
+            
         }
     }
     
@@ -105,6 +111,7 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
         tableView.beginUpdates()
         todoListData.remove(at: indexPath.row)
         tableView.deleteRows(at: [indexPath], with: .fade)
+        userDefaults.set(todoListData, forKey: "todoList")
         tableView.endUpdates()
         setEditButtonEnabledStatus()
     }
@@ -124,6 +131,7 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
                     self.todoListData.append(newTodo)
                     self.tableView.reloadData()
                     self.setEditButtonEnabledStatus()
+                    self.userDefaults.set(self.todoListData, forKey: "todoList")
                 } else {
                     let todoIsBlankAlert = UIAlertController(title: "Cannot add blank todo", message: nil, preferredStyle: .alert)
                     todoIsBlankAlert.addAction(UIAlertAction(title: "Ok", style: .default, handler: nil))
@@ -131,10 +139,11 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
                 }
             }
         }))
-        
+                
         todoAlert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: nil))
         
         self.present(todoAlert, animated: true, completion: nil)
+        
     }
     
     // MARK: - Edit mode
@@ -154,21 +163,14 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
         }
     }
     
-//    override func setEditing(_ editing: Bool, animated: Bool) {
-//        super.setEditing(editing, animated: animated)
-//        if self.isEditing == false {
-//            self.editButtonItem.title = "Edit"
-//        } else {
-//            self.editButtonItem.title = "Done"
-//        }
-//    }
-//
+
     func tableView(_ tableView: UITableView, canMoveRowAt indexPath: IndexPath) -> Bool {
         return true
     }
     
     func tableView(_ tableView: UITableView, moveRowAt sourceIndexPath: IndexPath, to destinationIndexPath: IndexPath) {
         todoListData.swapAt(sourceIndexPath.row, destinationIndexPath.row)
+        userDefaults.set(self.todoListData, forKey: "todoList")
     }
 }
 
