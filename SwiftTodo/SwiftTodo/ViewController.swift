@@ -27,6 +27,8 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
         
         let editButton = UIBarButtonItem(barButtonSystemItem: .edit, target: self, action: #selector(editMode))
         self.navigationItem.leftBarButtonItem = editButton
+        
+//        setEditButtonEnabledStatus()
     }
     
     // MARK: - Tableview setup
@@ -58,11 +60,35 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
     
     func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
         if editingStyle == .delete {
-            tableView.beginUpdates()
-            todoListData.remove(at: indexPath.row)
-            tableView.deleteRows(at: [indexPath], with: .fade)
-            tableView.endUpdates()
+            handleCompleteTodo(forRowAt: indexPath)
         }
+    }
+    
+    func tableView(_ tableView: UITableView, leadingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
+        let swipeRight = UIContextualAction(style: .normal,
+                                        title: "Complete") { [weak self] (action, view, completionHandler) in
+                                            self?.handleCompleteTodo(forRowAt: indexPath)
+                                            completionHandler(true)
+        }
+        swipeRight.backgroundColor = .systemGreen
+        return UISwipeActionsConfiguration(actions: [swipeRight])
+    }
+    
+//    func tableView(_ tableView: UITableView, trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
+//        let swipeLeft = UIContextualAction(style: .normal,
+//                                        title: "Complete") { [weak self] (action, view, completionHandler) in
+//                                            self?.handleCompleteTodo(forRowAt: indexPath)
+//                                            completionHandler(true)
+//        }
+//        swipeLeft.backgroundColor = .systemGreen
+//        return UISwipeActionsConfiguration(actions: [swipeLeft])
+//    }
+    
+    func handleCompleteTodo(forRowAt indexPath: IndexPath) {
+        tableView.beginUpdates()
+        todoListData.remove(at: indexPath.row)
+        tableView.deleteRows(at: [indexPath], with: .fade)
+        tableView.endUpdates()
     }
     
     // MARK: - Add new todo
@@ -101,13 +127,29 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
         }
     }
     
+    func setEditButtonEnabledStatus() {
+        if todoListData.isEmpty {
+            self.navigationItem.leftBarButtonItem?.isEnabled = false
+        } else {
+            self.navigationItem.leftBarButtonItem?.isEnabled = true
+        }
+    }
+    
+//    override func setEditing(_ editing: Bool, animated: Bool) {
+//        super.setEditing(editing, animated: animated)
+//        if self.isEditing == false {
+//            self.editButtonItem.title = "Edit"
+//        } else {
+//            self.editButtonItem.title = "Done"
+//        }
+//    }
+//
     func tableView(_ tableView: UITableView, canMoveRowAt indexPath: IndexPath) -> Bool {
         return true
     }
     
     func tableView(_ tableView: UITableView, moveRowAt sourceIndexPath: IndexPath, to destinationIndexPath: IndexPath) {
         todoListData.swapAt(sourceIndexPath.row, destinationIndexPath.row)
-        
     }
 }
 
